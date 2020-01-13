@@ -1,55 +1,44 @@
-from bs4 import BeautifulSoup
-import requests
-import os
-from splinter import Browser
-import pandas as pd
-import pymongo
-from pprint import pprint
-from flask import Flask, render_template
-
-
-url = 'https://mars.nasa.gov/news/'
-executable_path = {'executable_path': 'chromedriver.exe'}
-browser = Browser('chrome', **executable_path, headless=False)
-browser.visit(url)
-html = browser.html
-soup = BeautifulSoup(html, 'html.parser')
-news_title = soup.find('div', class_ = 'content_title').text
-news_content = soup.find('div', class_ = 'article_teaser_body').text
-
-
-conn = 'mongodb://localhost:27017'
-client = pymongo.MongoClient(conn)
-db = client.marsDB
-
-collection = db.data
-
-docs = [{
-    'news_title': news_title
-
-},
-  {
-      'news_content': news_content
-  }      
-]
-
-collection.insert_many(docs)
-
-
-db.roster.drop()
+from flask import Flask, render_template, redirect
+from flask_pymongo import PyMongo
+import scrape_mars
+# Create an instance of Flask
 app = Flask(__name__)
 
-@app.route('/')
-def index():
-    # Store the entire team collection in a list
-    mars_dict = {"news_t": "news_title",
-                 "news_c": "news_content"
+# Use PyMongo to establish Mongo connection
+# mongo = PyMongo(app, uri="mongodb://localhost:27017/weather_app")
+app.config["MONGO_URI"] = "mongodb://localhost:27017/mars"
+mongo = PyMongo(app)
 
-    }
+# Define the collection and drop any existing data for this exercise
+a = mongo.db.mars_data
+a.drop()
+
+# route visit the index page
+@app.route("/")
+def home():
+
+    # Find one record of data from the mongo database
+    x = a.find_one()
+
+    # Return template and data
+    return render_template("index.html", web =x)
 
 
-    # Return the template with the players list passed in
-    return render_template('index.html', dict=mars_dict)
+# Route that will trigger the scrape function
+@app.route("/scrape")
+def scrape():
+
+    # Run the scrape function
+    mars_dict = scrape_mars.scrape_info()
+
+    # Insert the results into the database
+    a.insert_one(mars_dict)
+    # The option below would update the existing record (or insert)
+    # costaRica_data.update({}, costa_data, upsert=True)
+
+    # Redirect back to home page
+    return redirect("/")
+
 
 if __name__ == "__main__":
     app.run(debug=True)
