@@ -37,7 +37,7 @@
     <div class = "col-md-8">
       <div class = "feature_img">
         <h4>Featured Mars Image</h4>
-        <img src="{{web.fea_img}}" class="img-fluid" alt="Featured image">
+        <img src="{{web.f_i}}" class="img-fluid" alt="Featured image">
       </div>
     </div>
     <!-- show weather  -->
@@ -48,11 +48,11 @@
           <p class="card-text">{{web.wea}}</p>
         </div>
       </div>
-      <!-- show table but not working -->
+      <!-- show table -->
       <div class="card" style="width: 18rem;">
         <div class="card-body">
           <h4 class="card-title">Mars Facts</h4>
-          <p class="card-text">{{web.ta}}</web></p>
+          <p class="card-text">{{web.ta|safe}}</p>
         </div>
       </div>
     </div>

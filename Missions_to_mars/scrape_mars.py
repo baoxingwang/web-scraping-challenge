@@ -17,15 +17,19 @@ def scrape_info ():
     news_title = soup.find('div', class_ = 'content_title').text
     news_content = soup.find('div', class_ = 'article_teaser_body').text
 
-    # find the feature image link but not working it was working before,trying other methods...
+    # find the feature image link 
 
-    # url = 'https://www.jpl.nasa.gov/spaceimages/?search=&category=Mars'
-    # browser.visit(url)
+    executable_path = {'executable_path': 'chromedriver.exe'}
+    browser = Browser('chrome', **executable_path, headless=False)
+    url = 'https://www.jpl.nasa.gov/spaceimages/?search=&category=Mars'
+    browser.visit(url)
     # browser.click_link_by_partial_text('FULL ')
-    # html = browser.html
-    # soup = bs(html, 'html.parser')
-    # fea_img = soup.find('div', class_= "fancybox-image")
-    # fea_img=(f'https://www.jpl.nasa.gov{fea_img}')
+    html = browser.html
+    soup = bs(html, 'html.parser')
+    fancybox = soup.find_all('a', class_='fancybox')[0]
+    fea_img = fancybox.get('data-fancybox-href')
+    fea_img=(f'https://www.jpl.nasa.gov{fea_img}')
+
 
 
     #find the weather info
@@ -36,7 +40,7 @@ def scrape_info ():
     weather = soup.find('p', class_ = 'TweetTextSize TweetTextSize--normal js-tweet-text tweet-text').text
     weather = weather[0:-26]
 
-    # find the fact table, saved as "ta.html" which works, but note working in "index"
+    # find the fact table"
     url = 'https://space-facts.com/mars/'
     tables = pd.read_html(url)
     df = tables[0]
@@ -77,7 +81,7 @@ def scrape_info ():
     mars_dict = {
         "n_t" : news_title,
         "n_c" : news_content,
-        # "f_i": fea_img,
+        "f_i": fea_img,
         "wea" : weather,
         "ta" : table,
         "h_i_1": hem_img_1,
